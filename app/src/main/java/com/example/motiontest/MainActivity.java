@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -35,10 +36,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView textViewZValue;
     private LineChart mainChart;
     private Button recordButton;
+    private Button sendButton;
 
-    private final ArrayList<Entry> xData = new ArrayList<Entry>();
-    private final ArrayList<Entry> yData = new ArrayList<Entry>();
-    private final ArrayList<Entry> zData = new ArrayList<Entry>();
+    private final ArrayList<Entry> xData = new ArrayList<>();
+    private final ArrayList<Entry> yData = new ArrayList<>();
+    private final ArrayList<Entry> zData = new ArrayList<>();
 
     private int sampleNo = 0;
     private boolean isRecording = false;
@@ -48,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final int xColor = Color.RED;
     private final int yColor = Color.GREEN;
     private final int zColor = Color.BLUE;
-
 
     OkHttpClient okHttpClient = new OkHttpClient();
 
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         textViewZValue = findViewById(R.id.textViewZValue);
         mainChart = findViewById(R.id.lineChart);
         recordButton = findViewById(R.id.buttonRecord);
+        sendButton = findViewById(R.id.buttonSend);
 
         recordButton.setOnClickListener(view -> {
             startRecording();
@@ -168,13 +170,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mainChart.getAxisRight().setEnabled(false);
         mainChart.setVisibleYRange(minY, maxY, YAxis.AxisDependency.LEFT);
         mainChart.setAutoScaleMinMaxEnabled(false);
-        mainChart.getAxisLeft().setAxisMinimum(minY);
-        mainChart.getAxisLeft().setAxisMaximum(maxY);
-
-        mainChart.setContentDescription("");
+        mainChart.getDescription().setEnabled(false);
 
         XAxis xaxis = mainChart.getXAxis();
         YAxis yaxis = mainChart.getAxisLeft();
+
+        xaxis.setDrawAxisLine(false);
+        xaxis.setDrawGridLines(false);
+
+        yaxis.setDrawGridLines(false);
+        yaxis.setAxisMinimum(minY);
+        yaxis.setAxisMaximum(maxY);
 
         switch (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) {
             case Configuration.UI_MODE_NIGHT_YES:
@@ -189,6 +195,4 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
         }
     }
-
-
 }

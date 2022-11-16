@@ -100,14 +100,14 @@
         android:layout_height="wrap_content"
         android:text="Rozpocznij nagrywanie"
         android:layout_margin="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/button4"
+        app:layout_constraintBottom_toTopOf="@+id/buttonSend"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lineChart" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/buttonSend"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Wyślij dane"
