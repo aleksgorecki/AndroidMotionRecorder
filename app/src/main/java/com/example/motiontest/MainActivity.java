@@ -11,6 +11,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,9 +20,15 @@ import android.widget.Toast;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BaseEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONStringer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,8 +37,10 @@ import java.util.TimerTask;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -79,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         editTextServerAddress = findViewById(R.id.editTextServerAddress);
         editTextPrefix = findViewById(R.id.editTextPrefix);
 
-        editTextServerAddress.setText("192.168.0.20:80");
+        editTextServerAddress.setText("192.168.0.20:8080");
 
 
         recordButton.setOnClickListener(view -> {
@@ -129,31 +138,73 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void sendClicked() {
 
-        testServerConnection();
+        if (xData.isEmpty() && yData.isEmpty() && zData.isEmpty()) {
+            Toast.makeText(this, "Brak nagranych danych", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-//        if (xData.isEmpty() && yData.isEmpty() && zData.isEmpty()) {
-//            Toast.makeText(this, "Brak nagranych danych", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        String serverAddress = editTextServerAddress.getText().toString();
-//
-//        if (serverAddress.isEmpty()) {
-//            Toast.makeText(this, "Nie podano adresu serwera", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        if (isRecording) {
-//            Toast.makeText(this, "Nagrywanie ruchu wciąż trwa", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        trySendRecordedDataToServer();
+        String serverAddress = editTextServerAddress.getText().toString();
+
+        if (serverAddress.isEmpty()) {
+            Toast.makeText(this, "Nie podano adresu serwera", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isRecording) {
+            Toast.makeText(this, "Nagrywanie ruchu wciąż trwa", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        trySendRecordedDataToServer();
     }
 
     private void trySendRecordedDataToServer() {
 
+        String prefix = editTextPrefix.getText().toString();
+
+        try {
+
+            JSONArray xJsonArray = new JSONArray(xData.stream().map(BaseEntry::getY).toArray());
+            JSONArray yJsonArray = new JSONArray(yData.stream().map(BaseEntry::getY).toArray());
+            JSONArray zJsonArray = new JSONArray(zData.stream().map(BaseEntry::getY).toArray());
+
+            String json = new JSONObject().put("prefix", prefix).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
+            RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
+
+            String serverAddress = editTextServerAddress.getText().toString();
+
+            Request request = new Request.Builder().url("http://" + serverAddress + "/recording").post(body).build();
+
+            Call call = okHttpClient.newCall(request);
+
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Nie znaleziono serwera", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, String.format("Kod %s", response.code()), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        }
+        catch (JSONException e) {
+            Log.e("JSONERROR", e.toString());
+            Toast.makeText(this, "Json error", Toast.LENGTH_SHORT).show();
+        }
     }
+
     private void clearRecordedData() {
         xData.clear();
         yData.clear();
@@ -174,6 +225,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mainChart.notifyDataSetChanged();
         mainChart.invalidate();
     }
+
+
 
     private void styleDataSets(LineDataSet xDataSet, LineDataSet yDataSet, LineDataSet zDataSet) {
         xDataSet.setColor(xColor);
@@ -255,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, "Błąd połączenia z serwerem", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Nie znaleziono serwera", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
