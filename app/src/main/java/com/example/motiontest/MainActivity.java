@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         editTextServerAddress = findViewById(R.id.editTextServerAddress);
         editTextPrefix = findViewById(R.id.editTextPrefix);
 
-        editTextServerAddress.setText("192.168.0.20:5000");
+        editTextServerAddress.setText("192.168.0.20:80");
 
 
         recordButton.setOnClickListener(view -> {
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
 
-        Request request = new Request.Builder().url("http://" + serverAddress + "/").build();
+        Request request = new Request.Builder().url("http://" + serverAddress).build();
 
         Call call = okHttpClient.newCall(request);
 
