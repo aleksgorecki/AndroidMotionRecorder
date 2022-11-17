@@ -1,5 +1,6 @@
 package com.example.motiontest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -11,21 +12,27 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -37,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LineChart mainChart;
     private Button recordButton;
     private Button sendButton;
+    private EditText editTextServerAddress;
+    private EditText editTextPrefix;
 
     private final ArrayList<Entry> xData = new ArrayList<>();
     private final ArrayList<Entry> yData = new ArrayList<>();
@@ -67,12 +76,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mainChart = findViewById(R.id.lineChart);
         recordButton = findViewById(R.id.buttonRecord);
         sendButton = findViewById(R.id.buttonSend);
+        editTextServerAddress = findViewById(R.id.editTextServerAddress);
+        editTextPrefix = findViewById(R.id.editTextPrefix);
+
+        editTextServerAddress.setText("192.168.0.20:5000");
+
 
         recordButton.setOnClickListener(view -> {
             startRecording();
         });
 
-        initChart();
+        sendButton.setOnClickListener(view -> {
+            sendClicked();
+        });
+
+        initChartConfiguration();
     }
 
     @Override
@@ -109,6 +127,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
+    private void sendClicked() {
+
+        testServerConnection();
+
+//        if (xData.isEmpty() && yData.isEmpty() && zData.isEmpty()) {
+//            Toast.makeText(this, "Brak nagranych danych", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        String serverAddress = editTextServerAddress.getText().toString();
+//
+//        if (serverAddress.isEmpty()) {
+//            Toast.makeText(this, "Nie podano adresu serwera", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        if (isRecording) {
+//            Toast.makeText(this, "Nagrywanie ruchu wciąż trwa", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        trySendRecordedDataToServer();
+    }
+
+    private void trySendRecordedDataToServer() {
+
+    }
     private void clearRecordedData() {
         xData.clear();
         yData.clear();
@@ -116,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sampleNo = 0;
     }
 
-    private void drawChart() {
+    private void drawRecordedDataOnChart() {
         LineDataSet xDataSet = new LineDataSet(xData, "X");
         LineDataSet yDataSet = new LineDataSet(yData, "Y");
         LineDataSet zDataSet = new LineDataSet(zData, "Z");
@@ -151,19 +196,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void run() {
                 runOnUiThread(() -> {
-                    stopRecording();
-                    drawChart();
+                    isRecording = false;
+                    drawRecordedDataOnChart();
                     recordButton.setEnabled(true);
                 });
             }
         }, motionDurationMs);
     }
 
-    private void stopRecording() {
-        isRecording = false;
-    }
-
-    private void initChart() {
+    private void initChartConfiguration() {
 
         mainChart.setDrawGridBackground(false);
         mainChart.setNoDataText("Brak wykresu");
@@ -194,5 +235,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mainChart.getLegend().setTextColor(Color.BLACK);
                 break;
         }
+    }
+
+    private void testServerConnection() {
+
+        String serverAddress = editTextServerAddress.getText().toString();
+
+        if (serverAddress.isEmpty()) {
+            return;
+        }
+
+        Request request = new Request.Builder().url("http://" + serverAddress + "/").build();
+
+        Call call = okHttpClient.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "Błąd połączenia z serwerem", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, String.format("Kod %s", response.code()), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
     }
 }
