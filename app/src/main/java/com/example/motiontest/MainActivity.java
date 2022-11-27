@@ -149,17 +149,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
 
+        String motionClass = editTextClass.getText().toString();
+
+        if (motionClass.isEmpty()) {
+            Toast.makeText(this, "Nie podano nazwy klasy wykonywanego ruchu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (isRecording) {
             Toast.makeText(this, "Nagrywanie ruchu wciąż trwa", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        trySendRecordedDataToServer();
+        trySendRecordedDataToServer(serverAddress, motionClass);
     }
 
-    private void trySendRecordedDataToServer() {
-
-        String motionClass = editTextClass.getText().toString();
+    private void trySendRecordedDataToServer(String serverAddress, String motionClass) {
 
         try {
 
@@ -167,10 +172,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             JSONArray yJsonArray = new JSONArray(yData.stream().map(BaseEntry::getY).toArray());
             JSONArray zJsonArray = new JSONArray(zData.stream().map(BaseEntry::getY).toArray());
 
-            String json = new JSONObject().put("class", motionClass).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
+            String json = new JSONObject().put("class", motionClass).put("duration_ms", motionDurationMs).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
             RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
-
-            String serverAddress = editTextServerAddress.getText().toString();
 
             Request request = new Request.Builder().url("http://" + serverAddress + "/new").post(body).build();
 
