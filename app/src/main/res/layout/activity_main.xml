@@ -116,7 +116,7 @@
         android:ems="10"
         android:hint="Adres serwera"
         android:inputType="textUri"
-        app:layout_constraintBottom_toTopOf="@+id/editTextPrefix"
+        app:layout_constraintBottom_toTopOf="@+id/editTextClass"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.526"
         app:layout_constraintStart_toStartOf="parent"
@@ -133,15 +133,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.526"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextPrefix" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextClass" />
 
     <EditText
-        android:id="@+id/editTextPrefix"
+        android:id="@+id/editTextClass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:ems="10"
-        android:hint="Prefix nazwy danych"
+        android:hint="Klasa ruchu"
         android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/buttonSend"
         app:layout_constraintEnd_toEndOf="parent"

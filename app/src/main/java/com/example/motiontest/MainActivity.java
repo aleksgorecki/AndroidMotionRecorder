@@ -28,7 +28,6 @@ import com.github.mikephil.charting.data.LineDataSet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button recordButton;
     private Button sendButton;
     private EditText editTextServerAddress;
-    private EditText editTextPrefix;
+    private EditText editTextClass;
 
     private final ArrayList<Entry> xData = new ArrayList<>();
     private final ArrayList<Entry> yData = new ArrayList<>();
@@ -86,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         recordButton = findViewById(R.id.buttonRecord);
         sendButton = findViewById(R.id.buttonSend);
         editTextServerAddress = findViewById(R.id.editTextServerAddress);
-        editTextPrefix = findViewById(R.id.editTextPrefix);
+        editTextClass = findViewById(R.id.editTextClass);
 
         editTextServerAddress.setText("192.168.0.20:8080");
 
@@ -160,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void trySendRecordedDataToServer() {
 
-        String prefix = editTextPrefix.getText().toString();
+        String motionClass = editTextClass.getText().toString();
 
         try {
 
@@ -168,12 +167,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             JSONArray yJsonArray = new JSONArray(yData.stream().map(BaseEntry::getY).toArray());
             JSONArray zJsonArray = new JSONArray(zData.stream().map(BaseEntry::getY).toArray());
 
-            String json = new JSONObject().put("prefix", prefix).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
+            String json = new JSONObject().put("class", motionClass).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
             RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
             String serverAddress = editTextServerAddress.getText().toString();
 
-            Request request = new Request.Builder().url("http://" + serverAddress + "/recording").post(body).build();
+            Request request = new Request.Builder().url("http://" + serverAddress + "/new").post(body).build();
 
             Call call = okHttpClient.newCall(request);
 
