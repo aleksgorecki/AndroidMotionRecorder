@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button sendButton;
     private EditText editTextServerAddress;
     private EditText editTextClass;
+    private Button predictionButton;
 
     private final ArrayList<Entry> xData = new ArrayList<>();
     private final ArrayList<Entry> yData = new ArrayList<>();
@@ -68,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final int yColor = Color.GREEN;
     private final int zColor = Color.BLUE;
 
-    OkHttpClient okHttpClient = new OkHttpClient();
+    OkHttpClient okHttpClient = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sendButton = findViewById(R.id.buttonSend);
         editTextServerAddress = findViewById(R.id.editTextServerAddress);
         editTextClass = findViewById(R.id.editTextClass);
+        predictionButton = findViewById(R.id.predictionButton);
 
         editTextServerAddress.setText("192.168.0.20:8080");
 
@@ -96,6 +99,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sendButton.setOnClickListener(view -> {
             sendClicked();
+        });
+
+        predictionButton.setOnClickListener(view -> {
+            predictionClicked();
         });
 
         initChartConfiguration();
@@ -161,10 +168,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
 
-        trySendRecordedDataToServer(serverAddress, motionClass);
+        trySendRecordedDataToServer(serverAddress, motionClass, "/new");
     }
 
-    private void trySendRecordedDataToServer(String serverAddress, String motionClass) {
+    private void predictionClicked() {
+        if (xData.isEmpty() && yData.isEmpty() && zData.isEmpty()) {
+            Toast.makeText(this, "Brak nagranych danych", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String serverAddress = editTextServerAddress.getText().toString();
+
+        if (serverAddress.isEmpty()) {
+            Toast.makeText(this, "Nie podano adresu serwera", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        trySendRecordedDataToServer(serverAddress, "Unknown", "/predict");
+    }
+
+    private void trySendRecordedDataToServer(String serverAddress, String motionClass, String endpoint) {
 
         try {
 
@@ -175,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             String json = new JSONObject().put("class", motionClass).put("duration_ms", motionDurationMs).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
             RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
-            Request request = new Request.Builder().url("http://" + serverAddress + "/new").post(body).build();
+            Request request = new Request.Builder().url("http://" + serverAddress + endpoint).post(body).build();
 
             Call call = okHttpClient.newCall(request);
 
