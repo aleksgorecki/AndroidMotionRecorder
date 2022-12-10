@@ -1,14 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TestingFragment">
+    tools:context=".TestingFragment"
+    tools:layout_editor_absoluteX="18dp"
+    tools:layout_editor_absoluteY="47dp"
+    android:padding="10dp">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="test model" />
+        tools:layout_editor_absoluteX="18dp"
+        tools:layout_editor_absoluteY="47dp">
 
+        <Button
+            android:id="@+id/buttonPredictServer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Predict using local model"
+            app:layout_constraintBottom_toTopOf="@+id/textViewResultsLocal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewResultsServer"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <TextView
+            android:id="@+id/textViewResultsServer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Prediction result:"
+            app:layout_constraintBottom_toTopOf="@+id/buttonPredictServer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonPredictLocal"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <Button
+            android:id="@+id/buttonPredictLocal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Predict using server model"
+            app:layout_constraintBottom_toTopOf="@+id/textViewResultsServer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <TextView
+            android:id="@+id/textViewResultsLocal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Prediction results:"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonPredictServer" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
