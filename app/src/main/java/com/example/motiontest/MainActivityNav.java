@@ -81,7 +81,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         LineChart mainChart = binding.mainChart;
 
         mainChart.setDrawGridBackground(false);
-        mainChart.setNoDataText("Brak wykresu");
+        mainChart.setNoDataText("Record a motion gesture to display it");
+        mainChart.setNoDataTextColor(Color.GRAY);
         mainChart.getAxisRight().setEnabled(false);
         mainChart.setVisibleYRange(minY, maxY, YAxis.AxisDependency.LEFT);
         mainChart.setAutoScaleMinMaxEnabled(false);
