@@ -1,36 +1,127 @@
 package com.example.motiontest;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
 
-import androidx.fragment.app.Fragment;
+import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import java.util.Objects;
 
+public class SettingsFragment extends PreferenceFragmentCompat {
 
-public class SettingsFragment extends Fragment {
-
-
-    public SettingsFragment() {}
-
-    public static SettingsFragment newInstance() {
-        SettingsFragment fragment = new SettingsFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
-    }
+    private Preference resetPreference;
+    private Preference checkServerPreference;
+    private EditTextPreference serverAddressPreference;
+    private EditTextPreference timeoutPreference;
+    private EditTextPreference recordingDurationPreference;
+    private EditTextPreference YMinPreference;
+    private EditTextPreference YMaxPreference;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_settings, container, false);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.root_preferences, rootKey);
+
+        bindPreferences();
+        setupPreferenceInputTypes();
+        setupPreferenceValidation();
+
+        resetPreference.setOnPreferenceClickListener(preference -> {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Reset to default")
+                    .setMessage("Are you sure you want to reset all preferences to default values?")
+                    .setNegativeButton("No", null)
+                    .setPositiveButton("Yes", (dialogInterface, i) -> {
+                        resetPreferencesToDefaults();
+                    })
+                    .show();
+            return super.onPreferenceTreeClick(preference);
+        });
+
+        checkServerPreference.setOnPreferenceClickListener(preference -> {
+            return super.onPreferenceTreeClick(preference);
+        });
+    }
+
+    private void bindPreferences() {
+        PreferenceManager preferenceManager = getPreferenceManager();
+        resetPreference = preferenceManager.findPreference("reset");
+        checkServerPreference = preferenceManager.findPreference("check_server");
+        serverAddressPreference = preferenceManager.findPreference("server_address");
+        timeoutPreference = preferenceManager.findPreference("timeout");
+        recordingDurationPreference = preferenceManager.findPreference("recording_duration");
+        YMinPreference = preferenceManager.findPreference("min_y");
+        YMaxPreference = preferenceManager.findPreference("max_y");
+    }
+
+    private void resetPreferencesToDefaults() {
+        Context context = requireContext();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().clear().commit();
+    }
+
+    private void showValidationErrorDialog(String errorReason) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Validation error")
+                .setMessage(errorReason)
+                .setNeutralButton("Ok", null).show();
+    }
+
+    private void setupPreferenceValidation() {
+
+        serverAddressPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Server address cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
+
+        timeoutPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Timeout duration cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
+
+        recordingDurationPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Recording duration cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
+
+        YMaxPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Maximal amplitude value cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
+
+        YMinPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Minimal amplitude value cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
+    }
+
+    private void setupPreferenceInputTypes() {
+        timeoutPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER));
+
+        recordingDurationPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER));
+
+        YMinPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED));
+
+        YMaxPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED));
     }
 }
