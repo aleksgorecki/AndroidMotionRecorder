@@ -1,29 +1,37 @@
 package com.example.motiontest;
 
-import android.text.InputType;
-
 public class SettingsItem {
-    private String name;
-    private InputType inputType;
+    private Settings.SettingsType type;
+    private String value;
+    private int inputType;
 
-    SettingsItem(String name, InputType inputType) {
-        this.name = name;
+    SettingsItem(Settings.SettingsType type, String value, int inputType) {
+        this.type = type;
+        this.value = value;
         this.inputType = inputType;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public InputType getInputType() {
+    public int getInputType() {
         return inputType;
     }
 
-    public void setInputType(InputType inputType) {
+    public void setInputType(int inputType) {
         this.inputType = inputType;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public Settings.SettingsType getType() {
+        return type;
+    }
+
+    public void setType(Settings.SettingsType type) {
+        this.type = type;
     }
 }
