@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
@@ -33,6 +34,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setupPreferenceValidation();
 
         resetPreference.setOnPreferenceClickListener(preference -> {
+            Log.e("TEST", serverAddressPreference.getText());
             new AlertDialog.Builder(getContext())
                     .setTitle("Reset to default")
                     .setMessage("Are you sure you want to reset all preferences to default values?")
@@ -41,8 +43,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         resetPreferencesToDefaults();
                     })
                     .show();
+            bindPreferences();
             return super.onPreferenceTreeClick(preference);
         });
+
+        PreferenceManager preferenceManager = getPreferenceManager();
 
         checkServerPreference.setOnPreferenceClickListener(preference -> {
             return super.onPreferenceTreeClick(preference);
@@ -62,14 +67,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     private void resetPreferencesToDefaults() {
         Context context = requireContext();
-        PreferenceManager.getDefaultSharedPreferences(context).edit().clear().commit();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().clear().apply();
+        bindPreferences();
+        setPreferencesFromResource(R.xml.root_preferences, null);
     }
 
     private void showValidationErrorDialog(String errorReason) {
         new AlertDialog.Builder(getContext())
                 .setTitle("Validation error")
                 .setMessage(errorReason)
-                .setNeutralButton("Ok", null).show();
+                .setNeutralButton("Ok", null)
+                .show();
     }
 
     private void setupPreferenceValidation() {
