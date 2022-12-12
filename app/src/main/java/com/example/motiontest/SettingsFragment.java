@@ -1,9 +1,7 @@
 package com.example.motiontest;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -12,8 +10,6 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-
-import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
@@ -39,15 +35,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     .setTitle("Reset to default")
                     .setMessage("Are you sure you want to reset all preferences to default values?")
                     .setNegativeButton("No", null)
-                    .setPositiveButton("Yes", (dialogInterface, i) -> {
-                        resetPreferencesToDefaults();
-                    })
+                    .setPositiveButton("Yes", (dialogInterface, i) -> resetPreferencesToDefaults())
                     .show();
             bindPreferences();
             return super.onPreferenceTreeClick(preference);
         });
-
-        PreferenceManager preferenceManager = getPreferenceManager();
 
         checkServerPreference.setOnPreferenceClickListener(preference -> {
             return super.onPreferenceTreeClick(preference);
@@ -68,7 +60,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private void resetPreferencesToDefaults() {
         Context context = requireContext();
         PreferenceManager.getDefaultSharedPreferences(context).edit().clear().apply();
-        bindPreferences();
         setPreferencesFromResource(R.xml.root_preferences, null);
     }
 
