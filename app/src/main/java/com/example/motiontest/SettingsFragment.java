@@ -47,7 +47,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         resetPreference.setOnPreferenceClickListener(preference -> {
             Log.e("TEST", serverAddressPreference.getText());
             new AlertDialog.Builder(getContext())
-                    .setTitle("Reset to default")
+                    .setTitle("Reset to defaults")
                     .setMessage("Are you sure you want to reset all preferences to default values?")
                     .setNegativeButton("No", null)
                     .setPositiveButton("Yes", (dialogInterface, i) -> {
