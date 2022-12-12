@@ -99,10 +99,9 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         XAxis xaxis = mainChart.getXAxis();
         YAxis yaxis = mainChart.getAxisLeft();
 
-        xaxis.setDrawAxisLine(false);
         xaxis.setDrawGridLines(false);
-
         yaxis.setDrawGridLines(false);
+
         yaxis.setAxisMinimum(minY);
         yaxis.setAxisMaximum(maxY);
 
