@@ -1,6 +1,7 @@
 package com.example.motiontest;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -9,9 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.MenuItem;
-import android.view.View;
+import android.preference.PreferenceManager;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -50,9 +49,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
     private int sampleNo = 0;
     private boolean isRecording = false;
-    private final int motionDurationMs = 700;
-    private final float maxY = 25;
-    private final float minY = -25;
+
+
     private final int xColor = Color.RED;
     private final int yColor = Color.GREEN;
     private final int zColor = Color.BLUE;
@@ -60,6 +58,15 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private final ArrayList<Entry> xData = new ArrayList<>();
     private final ArrayList<Entry> yData = new ArrayList<>();
     private final ArrayList<Entry> zData = new ArrayList<>();
+
+    private SharedPreferences sharedPreferences;
+    SharedPreferences.OnSharedPreferenceChangeListener listener;
+
+    private String serverAddress;
+    private int timeoutMs;
+    private int motionDurationMs;
+    private float maxY;
+    private float minY;
 
 
     @Override
@@ -77,6 +84,14 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         NavigationUI.setupWithNavController(binding.navView, navController);
 
         initChartConfiguration();
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        assignPreferencesValues();
+
+        listener = (sharedPreferences, s) -> assignPreferencesValues();
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
@@ -203,6 +218,14 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
             sampleNo++;
         }
+    }
+
+    private void assignPreferencesValues() {
+        serverAddress = sharedPreferences.getString("server_address", "192.168.0.20");
+        timeoutMs = Integer.parseInt(sharedPreferences.getString("timeout", "5000"));
+        motionDurationMs = Integer.parseInt(sharedPreferences.getString("recording_duration", "700"));
+        maxY = Float.parseFloat(sharedPreferences.getString("max_y", "-25"));
+        minY = Float.parseFloat(sharedPreferences.getString("min_y", "-25"));
     }
 
 }

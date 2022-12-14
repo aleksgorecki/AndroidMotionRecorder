@@ -45,7 +45,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         YMaxPreference = preferenceManager.findPreference("max_y");
 
         resetPreference.setOnPreferenceClickListener(preference -> {
-            Log.e("TEST", serverAddressPreference.getText());
             new AlertDialog.Builder(getContext())
                     .setTitle("Reset to defaults")
                     .setMessage("Are you sure you want to reset all preferences to default values?")
