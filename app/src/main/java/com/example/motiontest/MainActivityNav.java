@@ -9,8 +9,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.preference.PreferenceManager;
+import android.view.KeyEvent;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -20,13 +20,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentHostCallback;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentOnAttachListener;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -34,7 +28,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.motiontest.databinding.ActivityMainNavBinding;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -47,17 +40,16 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private SensorManager sensorManager;
     private Sensor accelerometer;
 
-    private int sampleNo = 0;
+    private int recordedSamplesNumber = 0;
     private boolean isRecording = false;
-
 
     private final int xColor = Color.RED;
     private final int yColor = Color.GREEN;
     private final int zColor = Color.BLUE;
 
-    private final ArrayList<Entry> xData = new ArrayList<>();
-    private final ArrayList<Entry> yData = new ArrayList<>();
-    private final ArrayList<Entry> zData = new ArrayList<>();
+    private final ArrayList<Float> xSamples = new ArrayList<>();
+    private final ArrayList<Float> ySamples = new ArrayList<>();
+    private final ArrayList<Float> zSamples = new ArrayList<>();
 
     private SharedPreferences sharedPreferences;
     SharedPreferences.OnSharedPreferenceChangeListener listener;
@@ -67,7 +59,6 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private int motionDurationMs;
     private float maxY;
     private float minY;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,20 +74,21 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        initChartConfiguration();
-
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         assignPreferencesValues();
-
-        listener = (sharedPreferences, s) -> assignPreferencesValues();
-
+        listener = (sharedPreferences, s) -> {
+            assignPreferencesValues();
+            initChartConfiguration();
+            binding.mainChart.invalidate();
+        };
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
         binding.fabRecord.setOnClickListener(view -> startRecording());
+
+        initChartConfiguration();
     }
 
     private void initChartConfiguration() {
@@ -135,19 +127,28 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     }
 
     private void clearRecordedData() {
-        xData.clear();
-        yData.clear();
-        zData.clear();
-        sampleNo = 0;
+        xSamples.clear();
+        ySamples.clear();
+        zSamples.clear();
+        recordedSamplesNumber = 0;
     }
 
     private void drawRecordedDataOnChart() {
 
         LineChart mainChart = binding.mainChart;
 
-        LineDataSet xDataSet = new LineDataSet(xData, "X");
-        LineDataSet yDataSet = new LineDataSet(yData, "Y");
-        LineDataSet zDataSet = new LineDataSet(zData, "Z");
+        ArrayList<Entry> xEntries = new ArrayList<>();
+        ArrayList<Entry> yEntries = new ArrayList<>();
+        ArrayList<Entry> zEntries = new ArrayList<>();
+
+        for (int i = 0; i < recordedSamplesNumber; i++) {
+            xEntries.add(new Entry(i, xSamples.get(i)));
+            yEntries.add(new Entry(i, ySamples.get(i)));
+            zEntries.add(new Entry(i, zSamples.get(i)));
+        }
+        LineDataSet xDataSet = new LineDataSet(xEntries, "X");
+        LineDataSet yDataSet = new LineDataSet(yEntries, "Y");
+        LineDataSet zDataSet = new LineDataSet(zEntries, "Z");
 
         styleDataSets(xDataSet, yDataSet, zDataSet);
 
@@ -212,11 +213,11 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         float z = sensorEvent.values[2];
 
         if (isRecording) {
-            xData.add(new Entry(sampleNo, x));
-            yData.add(new Entry(sampleNo, y));
-            zData.add(new Entry(sampleNo, z));
+            xSamples.add(x);
+            ySamples.add(y);
+            zSamples.add(z);
 
-            sampleNo++;
+            recordedSamplesNumber++;
         }
     }
 
@@ -228,4 +229,41 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         minY = Float.parseFloat(sharedPreferences.getString("min_y", "-25"));
     }
 
+    public String getServerAddress() {
+        return serverAddress;
+    }
+
+    public int getTimeoutMs() {
+        return timeoutMs;
+    }
+
+    public int getMotionDurationMs() {
+        return motionDurationMs;
+    }
+
+    public boolean checkServer() {
+        return false;
+    }
+
+    public void sendPredictionRequest() {
+
+    }
+
+    public void sendDatasetRequest(String dataset, String motionClass) {
+
+    }
+
+    public boolean isAMotionRecorded() {
+        return (!xSamples.isEmpty() && !ySamples.isEmpty() && !zSamples.isEmpty());
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            if (!isRecording) {
+                startRecording();
+            }
+        }
+        return true;
+    }
 }

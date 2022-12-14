@@ -122,12 +122,24 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private void setupPreferenceInputTypes() {
-        timeoutPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER));
+        timeoutPreference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            editText.setSelection(editText.getText().length());
+        });
 
-        recordingDurationPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER));
+        recordingDurationPreference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            editText.setSelection(editText.getText().length());
+        });
 
-        YMinPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED));
+        YMinPreference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+            editText.setSelection(editText.getText().length());
+        });
 
-        YMaxPreference.setOnBindEditTextListener(editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED));
+        YMaxPreference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+            editText.setSelection(editText.getText().length());
+        });
     }
 }

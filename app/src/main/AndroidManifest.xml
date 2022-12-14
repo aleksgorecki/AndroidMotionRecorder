@@ -19,7 +19,8 @@
         <activity
             android:name=".MainActivityNav"
             android:exported="true"
-            android:label="@string/title_activity_main_nav">
+            android:label="@string/title_activity_main_nav"
+            android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

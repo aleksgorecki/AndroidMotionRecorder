@@ -43,7 +43,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Sending to ..."
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonSendRecorded"
         app:layout_constraintEnd_toEndOf="parent"
