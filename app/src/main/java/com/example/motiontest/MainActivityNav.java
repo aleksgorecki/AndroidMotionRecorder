@@ -11,6 +11,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -32,6 +33,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+
 
 public class MainActivityNav extends AppCompatActivity implements SensorEventListener {
 
@@ -60,6 +65,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private float maxY;
     private float minY;
 
+    private OkHttpClient okHttpClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,9 +83,12 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         assignPreferencesValues();
+        okHttpClient = new OkHttpClient.Builder().connectTimeout(timeoutMs, TimeUnit.MILLISECONDS).build();
         listener = (sharedPreferences, s) -> {
             assignPreferencesValues();
-            initChartConfiguration();
+            okHttpClient = new OkHttpClient.Builder().connectTimeout(timeoutMs, TimeUnit.MILLISECONDS).build();
+            binding.mainChart.getAxisLeft().setAxisMinimum(minY);
+            binding.mainChart.getAxisLeft().setAxisMaximum(maxY);
             binding.mainChart.invalidate();
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
@@ -233,24 +243,12 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         return serverAddress;
     }
 
-    public int getTimeoutMs() {
-        return timeoutMs;
-    }
-
     public int getMotionDurationMs() {
         return motionDurationMs;
     }
 
-    public boolean checkServer() {
-        return false;
-    }
-
-    public void sendPredictionRequest() {
-
-    }
-
-    public void sendDatasetRequest(String dataset, String motionClass) {
-
+    public OkHttpClient getOkHttpClient() {
+        return okHttpClient;
     }
 
     public boolean isAMotionRecorded() {
@@ -263,7 +261,22 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
             if (!isRecording) {
                 startRecording();
             }
+            else {
+                Toast.makeText(this, "Recording still running", Toast.LENGTH_SHORT).show();
+            }
         }
         return true;
+    }
+
+    public ArrayList<Float> getxSamples() {
+        return xSamples;
+    }
+
+    public ArrayList<Float> getySamples() {
+        return ySamples;
+    }
+
+    public ArrayList<Float> getzSamples() {
+        return zSamples;
     }
 }

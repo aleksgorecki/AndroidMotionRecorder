@@ -2,46 +2,71 @@ package com.example.motiontest;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link TestingFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.example.motiontest.databinding.FragmentTestingBinding;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class TestingFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    FragmentTestingBinding binding;
+    Callback testingCallback = new Callback() {
+        @Override
+        public void onFailure(@NonNull Call call, @NonNull IOException e) {
+            if (Looper.myLooper() == null) {
+                Looper.prepare();
+            }
+            Toast.makeText(requireContext(), "Request failed", Toast.LENGTH_SHORT).show();
+        }
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+        @Override
+        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            if (Looper.myLooper() == null) {
+                Looper.prepare();
+            }
+            if (response.code() != 200) {
+                Toast.makeText(requireContext(), "Response code " + response.code(), Toast.LENGTH_SHORT).show();
+            }
+            else {
+                try {
+                    JSONObject responseJson = new JSONObject(response.body().string());
+                    String motionClass = responseJson.getString("class");
+                    String predictionResult = responseJson.getString("result");
+                    Toast.makeText(requireContext(), motionClass + " " + predictionResult, Toast.LENGTH_SHORT).show();
+                }
+                catch (JSONException e) {
+                    Toast.makeText(requireContext(), "Error retrieving JSON response body.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    };
 
     public TestingFragment() {
-        // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment TestingFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static TestingFragment newInstance(String param1, String param2) {
+    public static TestingFragment newInstance() {
         TestingFragment fragment = new TestingFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -49,16 +74,38 @@ public class TestingFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_testing, container, false);
+        binding =  FragmentTestingBinding.inflate(inflater, container, false);
+        binding.buttonPredictServer.setOnClickListener(view -> predictServerClicked());
+        return binding.getRoot();
+    }
+
+    private void predictServerClicked() {
+        MainActivityNav parentActivity = ((MainActivityNav) requireContext());
+        if (!parentActivity.isAMotionRecorded()) {
+            Toast.makeText(requireContext(), "No data to send available.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            JSONArray xJsonArray = new JSONArray(parentActivity.getxSamples());
+            JSONArray yJsonArray = new JSONArray(parentActivity.getySamples());
+            JSONArray zJsonArray = new JSONArray(parentActivity.getzSamples());
+
+            String json = new JSONObject().put("duration_ms", parentActivity.getMotionDurationMs()).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
+            RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
+
+            OkHttpClient okHttpClient = parentActivity.getOkHttpClient();
+            Request request = new Request.Builder().url("http://" + parentActivity.getServerAddress() + "/predict").post(body).build();
+            Call call = okHttpClient.newCall(request);
+            call.enqueue(testingCallback);
+        }
+        catch (JSONException e) {
+            Toast.makeText(requireContext(), "Error creating JSON body.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

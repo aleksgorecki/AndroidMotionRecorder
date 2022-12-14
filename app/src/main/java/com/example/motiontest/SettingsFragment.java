@@ -5,15 +5,25 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import java.io.IOException;
 import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
@@ -24,6 +34,29 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private EditTextPreference recordingDurationPreference;
     private EditTextPreference YMinPreference;
     private EditTextPreference YMaxPreference;
+    Callback checkServerCallback = new Callback() {
+        @Override
+        public void onFailure(@NonNull Call call, @NonNull IOException e) {
+            if (Looper.myLooper() == null) {
+                Looper.prepare();
+            }
+            Toast.makeText(requireContext(), "Request failed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            if (Looper.myLooper() == null) {
+                Looper.prepare();
+            }
+            if (response.code() != 200) {
+                Toast.makeText(requireContext(), "Response code " + response.code(), Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(requireContext(), "Server OK", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -32,6 +65,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         bindPreferences();
         setupPreferenceInputTypes();
         setupPreferenceValidation();
+    }
+
+    public void checkServer() {
+        MainActivityNav parentActivity = ((MainActivityNav) requireContext());
+        OkHttpClient okHttpClient = parentActivity.getOkHttpClient();
+
+        Request request = new Request.Builder().url("http://" + parentActivity.getServerAddress()).build();
+
+        Call call = okHttpClient.newCall(request);
+
+        call.enqueue(checkServerCallback);
     }
 
     private void bindPreferences() {
@@ -57,6 +101,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         checkServerPreference.setOnPreferenceClickListener(preference -> {
+            checkServer();
             return super.onPreferenceTreeClick(preference);
         });
     }
