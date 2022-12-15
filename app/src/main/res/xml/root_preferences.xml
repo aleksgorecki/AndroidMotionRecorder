@@ -39,6 +39,20 @@
             app:title="Recording duration (ms)"
             app:defaultValue="800">
         </EditTextPreference>
+        <SwitchPreference
+            app:key="countdown"
+            app:iconSpaceReserved="false"
+            app:title="Countdown before recording"
+            app:defaultValue="false"
+            >
+        </SwitchPreference>
+        <EditTextPreference
+            app:dependency="countdown"
+            app:iconSpaceReserved="false"
+            app:key="countdown_sec"
+            app:title="Countdown duration (sec)"
+            app:defaultValue="3">
+        </EditTextPreference>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Chart" app:iconSpaceReserved="false">

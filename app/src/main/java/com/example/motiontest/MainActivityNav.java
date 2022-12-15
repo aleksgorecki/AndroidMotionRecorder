@@ -68,10 +68,11 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private int motionDurationMs;
     private float maxY;
     private float minY;
+    private boolean useCountdown;
+    private int countdownSec;
 
     private OkHttpClient okHttpClient;
 
-    private int recordingDelaySec = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,11 +203,11 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         binding.cardView.setVisibility(View.GONE);
         binding.progressBarHorizontal.setIndeterminate(false);
         isCountingDown = true;
-        new CountDownTimer((1000 * recordingDelaySec), 20) {
+        new CountDownTimer((1000 * countdownSec), 20) {
 
             @Override
             public void onTick(long l) {
-                double progress = 100.0 * (l / (1000.0 * recordingDelaySec));
+                double progress = 100.0 * (l / (1000.0 * countdownSec));
                 binding.progressBarHorizontal.setProgress((int) progress, false);
                 binding.textViewDelayCounter.setText(Integer.toString((int) Math.ceil(l / 1000)));
             }
@@ -279,6 +280,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         motionDurationMs = Integer.parseInt(sharedPreferences.getString("recording_duration", "700"));
         maxY = Float.parseFloat(sharedPreferences.getString("max_y", "-25"));
         minY = Float.parseFloat(sharedPreferences.getString("min_y", "-25"));
+        useCountdown = sharedPreferences.getBoolean("countdown", false);
+        countdownSec = Integer.parseInt(sharedPreferences.getString("countdown_sec", "3"));
     }
 
     public String getServerAddress() {

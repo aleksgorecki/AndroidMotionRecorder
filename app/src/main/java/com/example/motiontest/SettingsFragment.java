@@ -15,6 +15,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreference;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -34,6 +35,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private EditTextPreference recordingDurationPreference;
     private EditTextPreference YMinPreference;
     private EditTextPreference YMaxPreference;
+    private SwitchPreference countdownPreference;
+    private EditTextPreference countdownSecPreference;
     Callback checkServerCallback = new Callback() {
         @Override
         public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -87,6 +90,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         recordingDurationPreference = preferenceManager.findPreference("recording_duration");
         YMinPreference = preferenceManager.findPreference("min_y");
         YMaxPreference = preferenceManager.findPreference("max_y");
+        countdownPreference = preferenceManager.findPreference("countdown");
+        countdownSecPreference = preferenceManager.findPreference("countdown_sec");
+
 
         resetPreference.setOnPreferenceClickListener(preference -> {
             new AlertDialog.Builder(getContext())
@@ -164,6 +170,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             return true;
         });
+
+        countdownSecPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Countdown duration cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
     }
 
     private void setupPreferenceInputTypes() {
@@ -184,6 +198,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         YMaxPreference.setOnBindEditTextListener(editText -> {
             editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+            editText.setSelection(editText.getText().length());
+        });
+
+        countdownSecPreference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
             editText.setSelection(editText.getText().length());
         });
     }
