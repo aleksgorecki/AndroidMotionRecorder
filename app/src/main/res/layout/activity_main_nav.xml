@@ -22,15 +22,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
+        android:id="@+id/progressBarHorizontal"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:translationZ="60dp"
-        app:layout_constraintBottom_toTopOf="@+id/nav_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="wrap_content"
+        android:translationZ="90dp"
+        app:layout_constraintBottom_toTopOf="@+id/textViewDelayCounter"
+        app:layout_constraintEnd_toEndOf="@+id/textViewDelayCounter"
+        app:layout_constraintStart_toStartOf="@+id/textViewDelayCounter" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewChart"

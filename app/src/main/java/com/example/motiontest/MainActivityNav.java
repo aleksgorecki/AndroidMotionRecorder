@@ -106,7 +106,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
         initChartConfiguration();
         binding.textViewDelayCounter.setVisibility(View.GONE);
-        binding.progressBar.setVisibility(View.GONE);
+        binding.progressBarHorizontal.setVisibility(View.GONE);
     }
 
     private void initChartConfiguration() {
@@ -197,34 +197,47 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         clearRecordedData();
         recordButton.setEnabled(false);
         binding.textViewDelayCounter.setVisibility(View.VISIBLE);
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.progressBar.setIndeterminate(false);
+        binding.progressBarHorizontal.setVisibility(View.VISIBLE);
+        binding.cardViewChart.setVisibility(View.GONE);
+        binding.cardView.setVisibility(View.GONE);
+        binding.progressBarHorizontal.setIndeterminate(false);
         isCountingDown = true;
-        new CountDownTimer((1000 * recordingDelaySec), 100) {
+        new CountDownTimer((1000 * recordingDelaySec), 20) {
 
             @Override
             public void onTick(long l) {
-                double progress = 100 * (l / (1000.0 * recordingDelaySec));
-                binding.progressBar.setProgress( 0, false );
+                double progress = 100.0 * (l / (1000.0 * recordingDelaySec));
+                binding.progressBarHorizontal.setProgress((int) progress, false);
                 binding.textViewDelayCounter.setText(Integer.toString((int) Math.ceil(l / 1000)));
             }
 
             @Override
             public void onFinish() {
-                binding.textViewDelayCounter.setVisibility(View.GONE);
-                binding.progressBar.setVisibility(View.GONE);
+                binding.textViewDelayCounter.setText("R");
                 isCountingDown = false;
                 isRecording = true;
-                new Timer().schedule(new TimerTask() {
+                new CountDownTimer(motionDurationMs, motionDurationMs/20) {
+
                     @Override
-                    public void run() {
+                    public void onTick(long l) {
+                        double progress = 100.0 * (l / (double) motionDurationMs);
+                        binding.progressBarHorizontal.setProgress((int) progress, false);
+                    }
+
+                    @Override
+                    public void onFinish() {
                         runOnUiThread(() -> {
                             isRecording = false;
+                            binding.progressBarHorizontal.setVisibility(View.GONE);
+                            binding.textViewDelayCounter.setVisibility(View.GONE);
+                            binding.cardViewChart.setVisibility(View.VISIBLE);
+                            binding.cardView.setVisibility(View.VISIBLE);
                             drawRecordedDataOnChart();
                             recordButton.setEnabled(true);
                         });
                     }
-                }, motionDurationMs);
+                }
+                .start();
             }
         }
         .start();
