@@ -9,8 +9,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -47,6 +50,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
     private int recordedSamplesNumber = 0;
     private boolean isRecording = false;
+    private boolean isCountingDown = false;
 
     private final int xColor = Color.RED;
     private final int yColor = Color.GREEN;
@@ -66,6 +70,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private float minY;
 
     private OkHttpClient okHttpClient;
+
+    private int recordingDelaySec = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +105,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         binding.fabRecord.setOnClickListener(view -> startRecording());
 
         initChartConfiguration();
+        binding.textViewDelayCounter.setVisibility(View.GONE);
+        binding.progressBar.setVisibility(View.GONE);
     }
 
     private void initChartConfiguration() {
@@ -187,18 +195,39 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         FloatingActionButton recordButton = binding.fabRecord;
 
         clearRecordedData();
-        isRecording = true;
         recordButton.setEnabled(false);
-        new Timer().schedule(new TimerTask() {
+        binding.textViewDelayCounter.setVisibility(View.VISIBLE);
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.progressBar.setIndeterminate(false);
+        isCountingDown = true;
+        new CountDownTimer((1000 * recordingDelaySec), 100) {
+
             @Override
-            public void run() {
-                runOnUiThread(() -> {
-                    isRecording = false;
-                    drawRecordedDataOnChart();
-                    recordButton.setEnabled(true);
-                });
+            public void onTick(long l) {
+                double progress = 100 * (l / (1000.0 * recordingDelaySec));
+                binding.progressBar.setProgress( 0, false );
+                binding.textViewDelayCounter.setText(Integer.toString((int) Math.ceil(l / 1000)));
             }
-        }, motionDurationMs);
+
+            @Override
+            public void onFinish() {
+                binding.textViewDelayCounter.setVisibility(View.GONE);
+                binding.progressBar.setVisibility(View.GONE);
+                isCountingDown = false;
+                isRecording = true;
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(() -> {
+                            isRecording = false;
+                            drawRecordedDataOnChart();
+                            recordButton.setEnabled(true);
+                        });
+                    }
+                }, motionDurationMs);
+            }
+        }
+        .start();
     }
 
     @Override
@@ -258,7 +287,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            if (!isRecording) {
+            if (!isRecording && !isCountingDown) {
                 startRecording();
             }
             else {
