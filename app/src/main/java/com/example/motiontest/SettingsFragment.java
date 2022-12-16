@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,26 +38,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private EditTextPreference YMaxPreference;
     private SwitchPreference countdownPreference;
     private EditTextPreference countdownSecPreference;
+    AlertDialog serverDialog;
     Callback checkServerCallback = new Callback() {
         @Override
         public void onFailure(@NonNull Call call, @NonNull IOException e) {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            Toast.makeText(requireContext(), "Request failed", Toast.LENGTH_SHORT).show();
+            getActivity().runOnUiThread(() -> {
+                serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                serverDialog.setMessage("Server failed to respond.");
+            });
         }
 
         @Override
         public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            if (response.code() != 200) {
-                Toast.makeText(requireContext(), "Response code " + response.code(), Toast.LENGTH_SHORT).show();
-            }
-            else {
-                Toast.makeText(requireContext(), "Server OK", Toast.LENGTH_SHORT).show();
-            }
+            getActivity().runOnUiThread(() -> {
+                if (response.code() != 200) {
+                    serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                    serverDialog.setMessage("Response code " + response.code());
+                }
+                else {
+                    serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                    serverDialog.setMessage("Server responded OK");
+                }
+            });
         }
     };
 
@@ -77,6 +80,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         Request request = new Request.Builder().url("http://" + parentActivity.getServerAddress()).build();
 
         Call call = okHttpClient.newCall(request);
+
+        serverDialog = new AlertDialog.Builder(getContext())
+                .setView(getLayoutInflater().inflate(R.layout.server_dialog, null))
+                .setTitle("Check server connection")
+                .setMessage("Waiting for server...")
+                .setNeutralButton("Cancel", null)
+                .show();
+
+        serverDialog.setOnDismissListener(dialogInterface -> {
+            call.cancel();
+        });
 
         call.enqueue(checkServerCallback);
     }

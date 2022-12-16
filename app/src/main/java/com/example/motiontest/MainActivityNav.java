@@ -11,6 +11,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -24,6 +25,8 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -105,6 +108,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         initChartConfiguration();
         binding.textViewDelayCounter.setVisibility(View.GONE);
         binding.progressBarHorizontal.setVisibility(View.GONE);
+        binding.textViewRecordingNow.setVisibility(View.GONE);
     }
 
     private void initChartConfiguration() {
@@ -191,7 +195,6 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private void onFabClicked() {
         clearRecordedData();
         binding.fabRecord.setEnabled(false);
-        binding.textViewDelayCounter.setVisibility(View.VISIBLE);
         binding.progressBarHorizontal.setVisibility(View.VISIBLE);
         binding.cardViewChart.setVisibility(View.GONE);
         binding.cardView.setVisibility(View.GONE);
@@ -213,6 +216,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
         if (useCountdown) {
             isCountingDown = true;
+            binding.textViewDelayCounter.setVisibility(View.VISIBLE);
             CountDownTimer countdownTimer = new CountDownTimer((1000 * countdownSec), 20) {
                 @Override
                 public void onTick(long l) {
@@ -223,6 +227,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
                 @Override
                 public void onFinish() { runOnUiThread(() -> {
                     isCountingDown = false;
+                    binding.textViewDelayCounter.setVisibility(View.GONE);
                     recordingTimer.start();
                     onRecordingStarted();
                 });
@@ -318,14 +323,14 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     }
 
     private void onRecordingStarted() {
-        binding.textViewDelayCounter.setText("R");
+        binding.textViewRecordingNow.setVisibility(View.VISIBLE);
         isRecording = true;
     }
 
     private void onRecordingFinished() {
         isRecording = false;
         binding.progressBarHorizontal.setVisibility(View.GONE);
-        binding.textViewDelayCounter.setVisibility(View.GONE);
+        binding.textViewRecordingNow.setVisibility(View.GONE);
         binding.cardViewChart.setVisibility(View.VISIBLE);
         binding.cardView.setVisibility(View.VISIBLE);
         drawRecordedDataOnChart();

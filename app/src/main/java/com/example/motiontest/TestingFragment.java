@@ -55,6 +55,7 @@ public class TestingFragment extends Fragment {
                         String predictionResult = responseJson.getString("result");
                         serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
                         serverDialog.setMessage(motionClass + ": " + predictionResult);
+                        binding.textViewResultsServer.setText(motionClass + ": " + predictionResult);
                     }
                     catch (JSONException | IOException e) {
                         Toast.makeText(requireContext(), "Error retrieving JSON response body.", Toast.LENGTH_SHORT).show();
