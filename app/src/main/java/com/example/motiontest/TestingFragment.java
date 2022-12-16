@@ -19,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -96,9 +97,11 @@ public class TestingFragment extends Fragment {
         }
 
         try {
-            JSONArray xJsonArray = new JSONArray(parentActivity.getxSamples());
-            JSONArray yJsonArray = new JSONArray(parentActivity.getySamples());
-            JSONArray zJsonArray = new JSONArray(parentActivity.getzSamples());
+            ArrayList<Double>[] axesData = parentActivity.getLastRecordedMotion().getSeparatedAxes();
+
+            JSONArray xJsonArray = new JSONArray(axesData[0]);
+            JSONArray yJsonArray = new JSONArray(axesData[1]);
+            JSONArray zJsonArray = new JSONArray(axesData[2]);
 
             String json = new JSONObject().put("duration_ms", parentActivity.getMotionDurationMs()).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
             RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));

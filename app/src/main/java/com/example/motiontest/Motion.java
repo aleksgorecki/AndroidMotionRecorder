@@ -71,10 +71,23 @@ public class Motion {
             cropped[i] = new double[] {0.0, 0.0, 0.0};
         }
 
+        numSamples = 2 * halfSpan;
         recordedSamples = cropped;
     }
 
     public int getNumSamples() {
         return numSamples;
+    }
+
+    public ArrayList<Double>[] getSeparatedAxes() {
+        ArrayList<Double> x = new ArrayList<>();
+        ArrayList<Double> y = new ArrayList<>();
+        ArrayList<Double> z = new ArrayList<>();
+        for (int i = 0; i < numSamples; i++) {
+            x.add(recordedSamples[i][0]);
+            y.add(recordedSamples[i][1]);
+            z.add(recordedSamples[i][2]);
+        }
+        return new ArrayList[]{x, y, z};
     }
 }

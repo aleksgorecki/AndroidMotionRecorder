@@ -56,9 +56,9 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private final int yColor = Color.GREEN;
     private final int zColor = Color.BLUE;
 
-    private final ArrayList<Float> xSamples = new ArrayList<>();
-    private final ArrayList<Float> ySamples = new ArrayList<>();
-    private final ArrayList<Float> zSamples = new ArrayList<>();
+    private MotionBuffer motionBuffer = new MotionBuffer(50);
+
+    private Motion lastRecordedMotion;
 
     private SharedPreferences sharedPreferences;
     SharedPreferences.OnSharedPreferenceChangeListener listener;
@@ -147,9 +147,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     }
 
     private void clearRecordedData() {
-        xSamples.clear();
-        ySamples.clear();
-        zSamples.clear();
+        motionBuffer.clear();
         recordedSamplesNumber = 0;
     }
 
@@ -161,10 +159,11 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         ArrayList<Entry> yEntries = new ArrayList<>();
         ArrayList<Entry> zEntries = new ArrayList<>();
 
-        for (int i = 0; i < recordedSamplesNumber; i++) {
-            xEntries.add(new Entry(i, xSamples.get(i)));
-            yEntries.add(new Entry(i, ySamples.get(i)));
-            zEntries.add(new Entry(i, zSamples.get(i)));
+        ArrayList<Double>[] separatedAxes = lastRecordedMotion.getSeparatedAxes();
+        for (int i = 0; i < lastRecordedMotion.getNumSamples(); i++) {
+            xEntries.add(new Entry(i, separatedAxes[0].get(i).floatValue()));
+            yEntries.add(new Entry(i, separatedAxes[1].get(i).floatValue()));
+            zEntries.add(new Entry(i, separatedAxes[2].get(i).floatValue()));
         }
         LineDataSet xDataSet = new LineDataSet(xEntries, "X");
         LineDataSet yDataSet = new LineDataSet(yEntries, "Y");
@@ -263,11 +262,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         float z = sensorEvent.values[2];
 
         if (isRecording) {
-            xSamples.add(x);
-            ySamples.add(y);
-            zSamples.add(z);
-
             recordedSamplesNumber++;
+            motionBuffer.recordSample(new double[]{x, y, z});
         }
     }
 
@@ -294,7 +290,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     }
 
     public boolean isAMotionRecorded() {
-        return (!xSamples.isEmpty() && !ySamples.isEmpty() && !zSamples.isEmpty());
+        return (lastRecordedMotion != null);
     }
 
     @Override
@@ -310,18 +306,6 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         return true;
     }
 
-    public ArrayList<Float> getxSamples() {
-        return xSamples;
-    }
-
-    public ArrayList<Float> getySamples() {
-        return ySamples;
-    }
-
-    public ArrayList<Float> getzSamples() {
-        return zSamples;
-    }
-
     private void onRecordingStarted() {
         binding.textViewRecordingNow.setVisibility(View.VISIBLE);
         isRecording = true;
@@ -329,11 +313,17 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
     private void onRecordingFinished() {
         isRecording = false;
+        lastRecordedMotion = motionBuffer.getMotion();
+        lastRecordedMotion.crop(lastRecordedMotion.getGlobalExtremumPosition(), 40);
+        drawRecordedDataOnChart();
+        binding.fabRecord.setEnabled(true);
         binding.progressBarHorizontal.setVisibility(View.GONE);
         binding.textViewRecordingNow.setVisibility(View.GONE);
         binding.cardViewChart.setVisibility(View.VISIBLE);
         binding.cardView.setVisibility(View.VISIBLE);
-        drawRecordedDataOnChart();
-        binding.fabRecord.setEnabled(true);
+    }
+
+    public Motion getLastRecordedMotion() {
+        return lastRecordedMotion;
     }
 }
