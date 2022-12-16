@@ -143,7 +143,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         new AlertDialog.Builder(getContext())
                 .setTitle("Validation error")
                 .setMessage(errorReason)
-                .setNeutralButton("Ok", null)
+                .setPositiveButton("Ok", null)
                 .show();
 
     }

@@ -48,16 +48,19 @@ public class DataFragment extends Fragment {
 
         @Override
         public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-            getActivity().runOnUiThread(() -> {
-                if (response.code() != 200) {
+
+            if (response.code() != 200) {
+                getActivity().runOnUiThread(() -> {
                     serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
                     serverDialog.setMessage("Response code " + response.code());
-                }
-                else {
+                });
+            }
+            else {
+                getActivity().runOnUiThread(() -> {
                     serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
                     serverDialog.setMessage("Recording saved on the server.");
-                }
-            });
+                });
+            }
         }
     };
 
@@ -121,7 +124,7 @@ public class DataFragment extends Fragment {
                     .setView(getLayoutInflater().inflate(R.layout.server_dialog, null))
                     .setTitle("Send recorded motion")
                     .setMessage("Waiting for server...")
-                    .setNeutralButton("Cancel", null)
+                    .setPositiveButton("Cancel", null)
                     .show();
 
             serverDialog.setOnDismissListener(dialogInterface -> {

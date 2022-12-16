@@ -1,6 +1,5 @@
 package com.example.motiontest;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class EvictingQueue<E> extends LinkedList<E> {

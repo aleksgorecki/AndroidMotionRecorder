@@ -44,25 +44,30 @@ public class TestingFragment extends Fragment {
 
         @Override
         public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-            getActivity().runOnUiThread(() -> {
-                if (response.code() != 200) {
+
+            if (response.code() != 200) {
+                getActivity().runOnUiThread(() -> {
                     serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
                     serverDialog.setMessage("Response code " + response.code());
-                }
-                else {
-                    try {
-                        JSONObject responseJson = new JSONObject(response.body().string());
-                        String motionClass = responseJson.getString("class");
-                        String predictionResult = responseJson.getString("result");
+                });
+            }
+            else {
+                try {
+                    JSONObject responseJson = new JSONObject(response.body().string());
+                    String motionClass = responseJson.getString("class");
+                    String predictionResult = responseJson.getString("result");
+                    getActivity().runOnUiThread(() -> {
                         serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
                         serverDialog.setMessage(motionClass + ": " + predictionResult);
-                        binding.textViewResultsServer.setText(motionClass + ": " + predictionResult);
-                    }
-                    catch (JSONException | IOException e) {
-                        Toast.makeText(requireContext(), "Error retrieving JSON response body.", Toast.LENGTH_SHORT).show();
-                    }
+                        binding.textViewResultsServer.setText("Last prediction - " + motionClass + ": " + predictionResult);
+                    });
                 }
-            });
+                catch (JSONException | IOException e) {
+                    getActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Error retrieving JSON response body.", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
         }
     };
 
@@ -114,7 +119,7 @@ public class TestingFragment extends Fragment {
                     .setView(getLayoutInflater().inflate(R.layout.server_dialog, null))
                     .setTitle("Predict on server")
                     .setMessage("Waiting for server...")
-                    .setNeutralButton("Cancel", null)
+                    .setPositiveButton("Cancel", null)
                     .show();
 
             serverDialog.setOnDismissListener(dialogInterface -> {
