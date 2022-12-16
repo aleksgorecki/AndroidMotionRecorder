@@ -70,6 +70,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private float minY;
     private boolean useCountdown;
     private int countdownSec;
+    private boolean shouldCrop;
+    private int cropLength;
 
     private OkHttpClient okHttpClient;
 
@@ -275,6 +277,8 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         minY = Float.parseFloat(sharedPreferences.getString("min_y", "-25"));
         useCountdown = sharedPreferences.getBoolean("countdown", false);
         countdownSec = Integer.parseInt(sharedPreferences.getString("countdown_sec", "3"));
+        shouldCrop = sharedPreferences.getBoolean("crop", false);
+        cropLength = Integer.parseInt(sharedPreferences.getString("crop_len", "3"));
     }
 
     public String getServerAddress() {
@@ -314,7 +318,9 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     private void onRecordingFinished() {
         isRecording = false;
         lastRecordedMotion = motionBuffer.getMotion();
-        lastRecordedMotion.crop(lastRecordedMotion.getGlobalExtremumPosition(), 40);
+        if (shouldCrop) {
+            lastRecordedMotion.crop(lastRecordedMotion.getGlobalExtremumPosition(), cropLength/2);
+        }
         drawRecordedDataOnChart();
         binding.fabRecord.setEnabled(true);
         binding.progressBarHorizontal.setVisibility(View.GONE);

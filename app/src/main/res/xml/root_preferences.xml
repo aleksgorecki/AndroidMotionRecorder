@@ -7,6 +7,20 @@
             app:title="Reset to defaults"
             app:key="reset">
         </Preference>
+        <SwitchPreference
+            app:key="crop"
+            app:iconSpaceReserved="false"
+            app:title="Crop to extremum"
+            app:defaultValue="false"
+            >
+        </SwitchPreference>
+        <EditTextPreference
+            app:dependency="crop"
+            app:iconSpaceReserved="false"
+            app:key="crop_len"
+            app:title="Cropped motion length (samples)"
+            app:defaultValue="100">
+        </EditTextPreference>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Server connection" app:iconSpaceReserved="false">

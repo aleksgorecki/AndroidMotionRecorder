@@ -54,9 +54,9 @@ public class Motion {
         int upperBound = centerPosition + halfSpan;
         int fullAxisLength = numSamples;
         int upperPadding = 0;
-        if (upperBound > fullAxisLength) {
+        if (upperBound >= fullAxisLength) {
             upperPadding = upperBound - fullAxisLength;
-            upperBound = fullAxisLength;
+            upperBound = fullAxisLength - 1;
         }
 
         double[][] cropped = new double[2 * halfSpan][3];
@@ -65,7 +65,7 @@ public class Motion {
             cropped[i] = new double[] {0.0, 0.0, 0.0};
         }
         for (int i = lowerBound; i < upperBound; i++) {
-            cropped[i] = recordedSamples[i];
+            cropped[i - lowerBound] = recordedSamples[i];
         }
         for (int i = upperBound; i < upperPadding; i++) {
             cropped[i] = new double[] {0.0, 0.0, 0.0};

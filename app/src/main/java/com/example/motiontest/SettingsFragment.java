@@ -38,6 +38,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private EditTextPreference YMaxPreference;
     private SwitchPreference countdownPreference;
     private EditTextPreference countdownSecPreference;
+    private SwitchPreference cropPreference;
+    private EditTextPreference cropLengthPreference;
     AlertDialog serverDialog;
     Callback checkServerCallback = new Callback() {
         @Override
@@ -106,6 +108,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         YMaxPreference = preferenceManager.findPreference("max_y");
         countdownPreference = preferenceManager.findPreference("countdown");
         countdownSecPreference = preferenceManager.findPreference("countdown_sec");
+        cropPreference = preferenceManager.findPreference("crop");
+        cropLengthPreference = preferenceManager.findPreference("crop_len");
 
 
         resetPreference.setOnPreferenceClickListener(preference -> {
@@ -193,6 +197,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             return true;
         });
+
+        cropLengthPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (((String) newValue).isEmpty() ) {
+                showValidationErrorDialog("Cropped motion length cannot be left empty.");
+                return false;
+            }
+            return true;
+        });
     }
 
     private void setupPreferenceInputTypes() {
@@ -217,6 +229,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         countdownSecPreference.setOnBindEditTextListener(editText -> {
+            editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            editText.setSelection(editText.getText().length());
+        });
+
+        cropLengthPreference.setOnBindEditTextListener(editText -> {
             editText.setInputType(InputType.TYPE_CLASS_NUMBER);
             editText.setSelection(editText.getText().length());
         });
