@@ -1,5 +1,6 @@
 package com.example.motiontest;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -34,26 +35,28 @@ import okhttp3.Response;
 public class DataFragment extends Fragment {
 
     private FragmentDataBinding binding;
+    private AlertDialog serverDialog;
     Callback datasetCallback = new Callback() {
         @Override
         public void onFailure(@NonNull Call call, @NonNull IOException e) {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            Toast.makeText(requireContext(), "Request failed", Toast.LENGTH_SHORT).show();
+            getActivity().runOnUiThread(() -> {
+                serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                serverDialog.setMessage("Server failed to respond.");
+            });
         }
 
         @Override
         public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            if (response.code() != 200) {
-                Toast.makeText(requireContext(), "Response code " + response.code(), Toast.LENGTH_SHORT).show();
-            }
-            else {
-                Toast.makeText(requireContext(), "Server OK", Toast.LENGTH_SHORT).show();
-            }
+            getActivity().runOnUiThread(() -> {
+                if (response.code() != 200) {
+                    serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                    serverDialog.setMessage("Response code " + response.code());
+                }
+                else {
+                    serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                    serverDialog.setMessage("Recording saved on the server.");
+                }
+            });
         }
     };
 
@@ -109,6 +112,18 @@ public class DataFragment extends Fragment {
             OkHttpClient okHttpClient = parentActivity.getOkHttpClient();
             Request request = new Request.Builder().url("http://" + parentActivity.getServerAddress() + "/new").post(body).build();
             Call call = okHttpClient.newCall(request);
+
+            serverDialog = new AlertDialog.Builder(getContext())
+                    .setView(getLayoutInflater().inflate(R.layout.server_dialog, null))
+                    .setTitle("Send recorded motion")
+                    .setMessage("Waiting for server...")
+                    .setNeutralButton("Cancel", null)
+                    .show();
+
+            serverDialog.setOnDismissListener(dialogInterface -> {
+                call.cancel();
+            });
+
             call.enqueue(datasetCallback);
         }
         catch (JSONException e) {

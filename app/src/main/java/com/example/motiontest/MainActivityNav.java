@@ -11,7 +11,6 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -34,8 +33,6 @@ import com.example.motiontest.databinding.ActivityMainNavBinding;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -103,7 +100,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
-        binding.fabRecord.setOnClickListener(view -> startRecording());
+        binding.fabRecord.setOnClickListener(view -> onFabClicked());
 
         initChartConfiguration();
         binding.textViewDelayCounter.setVisibility(View.GONE);
@@ -191,57 +188,52 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         }
     }
 
-    private void startRecording() {
-
-        FloatingActionButton recordButton = binding.fabRecord;
-
+    private void onFabClicked() {
         clearRecordedData();
-        recordButton.setEnabled(false);
+        binding.fabRecord.setEnabled(false);
         binding.textViewDelayCounter.setVisibility(View.VISIBLE);
         binding.progressBarHorizontal.setVisibility(View.VISIBLE);
         binding.cardViewChart.setVisibility(View.GONE);
         binding.cardView.setVisibility(View.GONE);
-        binding.progressBarHorizontal.setIndeterminate(false);
-        isCountingDown = true;
-        new CountDownTimer((1000 * countdownSec), 20) {
+
+        CountDownTimer recordingTimer = new CountDownTimer(motionDurationMs, motionDurationMs/100) {
 
             @Override
             public void onTick(long l) {
-                double progress = 100.0 * (l / (1000.0 * countdownSec));
+                double progress = 100.0 * (l / (double) motionDurationMs);
                 binding.progressBarHorizontal.setProgress((int) progress, false);
-                binding.textViewDelayCounter.setText(Integer.toString((int) Math.ceil(l / 1000)));
             }
 
             @Override
             public void onFinish() {
-                binding.textViewDelayCounter.setText("R");
-                isCountingDown = false;
-                isRecording = true;
-                new CountDownTimer(motionDurationMs, motionDurationMs/20) {
-
-                    @Override
-                    public void onTick(long l) {
-                        double progress = 100.0 * (l / (double) motionDurationMs);
-                        binding.progressBarHorizontal.setProgress((int) progress, false);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        runOnUiThread(() -> {
-                            isRecording = false;
-                            binding.progressBarHorizontal.setVisibility(View.GONE);
-                            binding.textViewDelayCounter.setVisibility(View.GONE);
-                            binding.cardViewChart.setVisibility(View.VISIBLE);
-                            binding.cardView.setVisibility(View.VISIBLE);
-                            drawRecordedDataOnChart();
-                            recordButton.setEnabled(true);
-                        });
-                    }
-                }
-                .start();
+                runOnUiThread(MainActivityNav.this::onRecordingFinished);
             }
+        };
+
+
+        if (useCountdown) {
+            isCountingDown = true;
+            CountDownTimer countdownTimer = new CountDownTimer((1000 * countdownSec), 20) {
+                @Override
+                public void onTick(long l) {
+                    binding.progressBarHorizontal.setProgress((int) (100.0 * (l / (1000.0 * countdownSec))), false);
+                    binding.textViewDelayCounter.setText(Integer.toString((int) Math.ceil(l / 1000)));
+                }
+
+                @Override
+                public void onFinish() { runOnUiThread(() -> {
+                    isCountingDown = false;
+                    recordingTimer.start();
+                    onRecordingStarted();
+                });
+                }
+            };
+            countdownTimer.start();
         }
-        .start();
+        else {
+            onRecordingStarted();
+            recordingTimer.start();
+        }
     }
 
     @Override
@@ -304,7 +296,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             if (!isRecording && !isCountingDown) {
-                startRecording();
+                onFabClicked();
             }
             else {
                 Toast.makeText(this, "Recording still running", Toast.LENGTH_SHORT).show();
@@ -323,5 +315,20 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
     public ArrayList<Float> getzSamples() {
         return zSamples;
+    }
+
+    private void onRecordingStarted() {
+        binding.textViewDelayCounter.setText("R");
+        isRecording = true;
+    }
+
+    private void onRecordingFinished() {
+        isRecording = false;
+        binding.progressBarHorizontal.setVisibility(View.GONE);
+        binding.textViewDelayCounter.setVisibility(View.GONE);
+        binding.cardViewChart.setVisibility(View.VISIBLE);
+        binding.cardView.setVisibility(View.VISIBLE);
+        drawRecordedDataOnChart();
+        binding.fabRecord.setEnabled(true);
     }
 }

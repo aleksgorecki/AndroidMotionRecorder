@@ -127,6 +127,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 .setMessage(errorReason)
                 .setNeutralButton("Ok", null)
                 .show();
+
     }
 
     private void setupPreferenceValidation() {

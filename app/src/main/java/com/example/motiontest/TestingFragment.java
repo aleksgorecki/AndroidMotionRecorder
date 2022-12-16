@@ -1,5 +1,6 @@
 package com.example.motiontest;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -30,34 +31,36 @@ import okhttp3.Response;
 public class TestingFragment extends Fragment {
 
     FragmentTestingBinding binding;
+    AlertDialog serverDialog;
     Callback testingCallback = new Callback() {
         @Override
         public void onFailure(@NonNull Call call, @NonNull IOException e) {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            Toast.makeText(requireContext(), "Request failed", Toast.LENGTH_SHORT).show();
+            getActivity().runOnUiThread(() -> {
+                serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                serverDialog.setMessage("Server failed to respond.");
+            });
         }
 
         @Override
         public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-            if (Looper.myLooper() == null) {
-                Looper.prepare();
-            }
-            if (response.code() != 200) {
-                Toast.makeText(requireContext(), "Response code " + response.code(), Toast.LENGTH_SHORT).show();
-            }
-            else {
-                try {
-                    JSONObject responseJson = new JSONObject(response.body().string());
-                    String motionClass = responseJson.getString("class");
-                    String predictionResult = responseJson.getString("result");
-                    Toast.makeText(requireContext(), motionClass + " " + predictionResult, Toast.LENGTH_SHORT).show();
+            getActivity().runOnUiThread(() -> {
+                if (response.code() != 200) {
+                    serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                    serverDialog.setMessage("Response code " + response.code());
                 }
-                catch (JSONException e) {
-                    Toast.makeText(requireContext(), "Error retrieving JSON response body.", Toast.LENGTH_SHORT).show();
+                else {
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        String motionClass = responseJson.getString("class");
+                        String predictionResult = responseJson.getString("result");
+                        serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
+                        serverDialog.setMessage(motionClass + ": " + predictionResult);
+                    }
+                    catch (JSONException | IOException e) {
+                        Toast.makeText(requireContext(), "Error retrieving JSON response body.", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
+            });
         }
     };
 
@@ -102,6 +105,18 @@ public class TestingFragment extends Fragment {
             OkHttpClient okHttpClient = parentActivity.getOkHttpClient();
             Request request = new Request.Builder().url("http://" + parentActivity.getServerAddress() + "/predict").post(body).build();
             Call call = okHttpClient.newCall(request);
+
+            serverDialog = new AlertDialog.Builder(getContext())
+                    .setView(getLayoutInflater().inflate(R.layout.server_dialog, null))
+                    .setTitle("Predict on server")
+                    .setMessage("Waiting for server...")
+                    .setNeutralButton("Cancel", null)
+                    .show();
+
+            serverDialog.setOnDismissListener(dialogInterface -> {
+                call.cancel();
+            });
+
             call.enqueue(testingCallback);
         }
         catch (JSONException e) {
