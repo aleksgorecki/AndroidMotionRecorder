@@ -70,6 +70,8 @@ public class Motion {
         for (int i = upperBound; i < upperPadding; i++) {
             cropped[i] = new double[] {0.0, 0.0, 0.0};
         }
+
+        recordedSamples = cropped;
     }
 
     public int getNumSamples() {
