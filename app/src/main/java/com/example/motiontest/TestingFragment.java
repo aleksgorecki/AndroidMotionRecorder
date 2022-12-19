@@ -1,6 +1,7 @@
 package com.example.motiontest;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,13 +14,18 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.motiontest.databinding.FragmentTestingBinding;
+import com.example.motiontest.ml.BasicModel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.tensorflow.lite.DataType;
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -33,6 +39,16 @@ public class TestingFragment extends Fragment {
 
     FragmentTestingBinding binding;
     AlertDialog serverDialog;
+    BasicModel model;
+    ArrayList<String> labels = new ArrayList<>(Arrays.asList(
+            "nothing",
+            "x_negative",
+            "x_positive",
+            "y_negative",
+            "y_positive",
+            "z_negative",
+            "z_positive"
+    ));
     Callback testingCallback = new Callback() {
         @Override
         public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -91,7 +107,44 @@ public class TestingFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding =  FragmentTestingBinding.inflate(inflater, container, false);
         binding.buttonPredictServer.setOnClickListener(view -> predictServerClicked());
+        binding.buttonPredictLocal.setOnClickListener(view -> predictLocalClicked());
         return binding.getRoot();
+    }
+
+    private void predictLocalClicked() {
+        MainActivityNav parentActivity = ((MainActivityNav) requireContext());
+        if (!parentActivity.isAMotionRecorded()) {
+            Toast.makeText(requireContext(), "No data to use available.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            model = BasicModel.newInstance(requireContext());
+            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 1, 120, 3}, DataType.FLOAT32);
+            BasicModel.Outputs outputs = model.process(inputFeature0);
+            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+            float[] outputArray = outputFeature0.getFloatArray();
+
+            int mostLikelyIndex = 0;
+            float highestProbability = 0;
+            for (int i = 0; i < labels.size(); i++) {
+                if (outputArray[i] > highestProbability) {
+                    mostLikelyIndex = i;
+                    highestProbability = outputArray[i];
+                }
+            }
+
+            Dialog dialog = new AlertDialog.Builder(getContext())
+                    .setTitle("Local prediction")
+                    .setMessage(labels.get(mostLikelyIndex) + ": " + String.format("%.2f", outputArray[mostLikelyIndex]))
+                    .setPositiveButton("Cancel", null)
+                    .show();
+            binding.textViewResultsLocal.setText("Last prediction - " + labels.get(mostLikelyIndex) + ": " + String.format("%.2f", outputArray[mostLikelyIndex]));
+
+            model.close();
+        } catch (IOException e) {
+            Toast.makeText(requireContext(), "Model error occured.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void predictServerClicked() {
