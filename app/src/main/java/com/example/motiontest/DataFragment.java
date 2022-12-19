@@ -65,7 +65,6 @@ public class DataFragment extends Fragment {
     };
 
     public DataFragment() {
-        // Required empty public constructor
     }
 
     public static DataFragment newInstance() {
@@ -113,7 +112,7 @@ public class DataFragment extends Fragment {
             JSONArray yJsonArray = new JSONArray(axesData[1]);
             JSONArray zJsonArray = new JSONArray(axesData[2]);
 
-            String json = new JSONObject().put("class", motionClass).put("duration_ms", parentActivity.getMotionDurationMs()).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
+            String json = new JSONObject().put("class", motionClass).put("dataset", dataset).put("duration_ms", parentActivity.getMotionDurationMs()).put("x", xJsonArray).put("y", yJsonArray).put("z", zJsonArray).toString();
             RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
 
             OkHttpClient okHttpClient = parentActivity.getOkHttpClient();

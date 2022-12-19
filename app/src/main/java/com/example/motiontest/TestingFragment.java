@@ -58,8 +58,8 @@ public class TestingFragment extends Fragment {
                     String predictionResult = responseJson.getString("result");
                     getActivity().runOnUiThread(() -> {
                         serverDialog.findViewById(R.id.progressBar).setVisibility(View.GONE);
-                        serverDialog.setMessage(motionClass + ": " + predictionResult);
-                        binding.textViewResultsServer.setText("Last prediction - " + motionClass + ": " + predictionResult);
+                        serverDialog.setMessage(motionClass + ": " + String.format("%.2f", Float.parseFloat(predictionResult)));
+                        binding.textViewResultsServer.setText("Last prediction - " + motionClass + ": " + String.format("%.2f", Float.parseFloat(predictionResult)));
                     });
                 }
                 catch (JSONException | IOException e) {
