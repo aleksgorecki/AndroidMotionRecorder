@@ -128,17 +128,16 @@ public class TestingFragment extends Fragment {
 
             float[] flattenedInput = new float[1 * 1 * 120 * 3];
 
-            ArrayList<Float>[] axes =  motion.getSeparatedAxes();
-            ArrayList<Float> combined = new ArrayList<>();
-            for (ArrayList<Float> axis: axes) {
-                combined.addAll(axis);
-            }
-            for (int i = 0; i < 120 * 3; i++) {
-                flattenedInput[i] = combined.get(i);
+            float[][] motionArray = motion.getRecordedSamples();
+            int flattenedIndex = 0;
+            for (int i = 0; i < 120; i++) {
+                flattenedInput[flattenedIndex++] = motionArray[i][0];
+                flattenedInput[flattenedIndex++] = motionArray[i][1];
+                flattenedInput[flattenedIndex++] = motionArray[i][2];
             }
 
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 1, 120, 3}, DataType.FLOAT32);
-            inputFeature0.loadArray(flattenedInput, new int[]{1, 1, 120, 3});
+            inputFeature0.loadArray(flattenedInput);
             BasicModel.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
             float[] outputArray = outputFeature0.getFloatArray();
@@ -146,7 +145,6 @@ public class TestingFragment extends Fragment {
             int mostLikelyIndex = 0;
             float highestProbability = 0;
             for (int i = 0; i < labels.size(); i++) {
-                Log.e("test", Float.toString(outputArray[i]));
                 if (outputArray[i] > highestProbability) {
                     mostLikelyIndex = i;
                     highestProbability = outputArray[i];

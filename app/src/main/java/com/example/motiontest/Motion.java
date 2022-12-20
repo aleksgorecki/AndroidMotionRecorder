@@ -66,7 +66,9 @@ public class Motion {
             cropped[i] = new float[] {0.0f, 0.0f, 0.0f};
         }
         for (int i = lowerBound; i < upperBound; i++) {
-            cropped[i - lowerBound] = recordedSamples[i];
+            for (int j = 0; j < 3; j++) {
+                cropped[i - lowerBound][j] = recordedSamples[i][j];
+            }
         }
         for (int i = upperBound; i < upperPadding; i++) {
             cropped[i] = new float[] {0.0f, 0.0f, 0.0f};
@@ -91,4 +93,9 @@ public class Motion {
         }
         return new ArrayList[]{x, y, z};
     }
+
+    public float[][] getRecordedSamples() {
+        return recordedSamples;
+    }
+
 }
