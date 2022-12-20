@@ -3,25 +3,26 @@ package com.example.motiontest;
 import java.util.ArrayList;
 
 public class Motion {
-    private double[][] recordedSamples;
+    private float[][] recordedSamples;
     private int numSamples;
 
-    public Motion(double[][] recordedSamples) {
+    public Motion(float[][] recordedSamples, int numSamples) {
         this.recordedSamples = recordedSamples;
+        this.numSamples = numSamples;
     }
 
     public Motion(ArrayList<double[]> recordedSamples) {
-        this.recordedSamples = recordedSamples.toArray(new double[recordedSamples.size()][3]);
+        this.recordedSamples = recordedSamples.toArray(new float[recordedSamples.size()][3]);
         this.numSamples = recordedSamples.size();
     }
 
     public int getGlobalExtremumPosition() {
         int extremumPosition = 0;
-        double extremumValue = 0;
+        float extremumValue = 0;
         for (int i = 0; i < numSamples; i++) {
-            double x = recordedSamples[i][0];
-            double y = recordedSamples[i][1];
-            double z = recordedSamples[i][2];
+            float x = recordedSamples[i][0];
+            float y = recordedSamples[i][1];
+            float z = recordedSamples[i][2];
             if (x > extremumValue) {
                 extremumPosition = i;
                 extremumValue = x;
@@ -38,8 +39,8 @@ public class Motion {
         return extremumPosition;
     }
 
-    public double[][][] getThreeChannelTimeseries() {
-        double[][][] multichannelArray = new double[1][numSamples][3];
+    public float[][][] getThreeChannelTimeseries() {
+        float[][][] multichannelArray = new float[1][numSamples][3];
         multichannelArray[0] = recordedSamples;
         return multichannelArray;
     }
@@ -59,16 +60,16 @@ public class Motion {
             upperBound = fullAxisLength - 1;
         }
 
-        double[][] cropped = new double[2 * halfSpan][3];
+        float[][] cropped = new float[2 * halfSpan][3];
 
         for (int i = 0; i < lowerPadding; i++) {
-            cropped[i] = new double[] {0.0, 0.0, 0.0};
+            cropped[i] = new float[] {0.0f, 0.0f, 0.0f};
         }
         for (int i = lowerBound; i < upperBound; i++) {
             cropped[i - lowerBound] = recordedSamples[i];
         }
         for (int i = upperBound; i < upperPadding; i++) {
-            cropped[i] = new double[] {0.0, 0.0, 0.0};
+            cropped[i] = new float[] {0.0f, 0.0f, 0.0f};
         }
 
         numSamples = 2 * halfSpan;
@@ -79,10 +80,10 @@ public class Motion {
         return numSamples;
     }
 
-    public ArrayList<Double>[] getSeparatedAxes() {
-        ArrayList<Double> x = new ArrayList<>();
-        ArrayList<Double> y = new ArrayList<>();
-        ArrayList<Double> z = new ArrayList<>();
+    public ArrayList<Float>[] getSeparatedAxes() {
+        ArrayList<Float> x = new ArrayList<>();
+        ArrayList<Float> y = new ArrayList<>();
+        ArrayList<Float> z = new ArrayList<>();
         for (int i = 0; i < numSamples; i++) {
             x.add(recordedSamples[i][0]);
             y.add(recordedSamples[i][1]);

@@ -7,7 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +24,7 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -120,7 +121,24 @@ public class TestingFragment extends Fragment {
 
         try {
             model = BasicModel.newInstance(requireContext());
+
+
+            Motion motion = parentActivity.getLastRecordedMotion();
+            motion.crop(motion.getGlobalExtremumPosition(), 120/2);
+
+            float[] flattenedInput = new float[1 * 1 * 120 * 3];
+
+            ArrayList<Float>[] axes =  motion.getSeparatedAxes();
+            ArrayList<Float> combined = new ArrayList<>();
+            for (ArrayList<Float> axis: axes) {
+                combined.addAll(axis);
+            }
+            for (int i = 0; i < 120 * 3; i++) {
+                flattenedInput[i] = combined.get(i);
+            }
+
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 1, 120, 3}, DataType.FLOAT32);
+            inputFeature0.loadArray(flattenedInput, new int[]{1, 1, 120, 3});
             BasicModel.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
             float[] outputArray = outputFeature0.getFloatArray();
@@ -128,6 +146,7 @@ public class TestingFragment extends Fragment {
             int mostLikelyIndex = 0;
             float highestProbability = 0;
             for (int i = 0; i < labels.size(); i++) {
+                Log.e("test", Float.toString(outputArray[i]));
                 if (outputArray[i] > highestProbability) {
                     mostLikelyIndex = i;
                     highestProbability = outputArray[i];
@@ -155,7 +174,7 @@ public class TestingFragment extends Fragment {
         }
 
         try {
-            ArrayList<Double>[] axesData = parentActivity.getLastRecordedMotion().getSeparatedAxes();
+            ArrayList<Float>[] axesData = parentActivity.getLastRecordedMotion().getSeparatedAxes();
 
             JSONArray xJsonArray = new JSONArray(axesData[0]);
             JSONArray yJsonArray = new JSONArray(axesData[1]);

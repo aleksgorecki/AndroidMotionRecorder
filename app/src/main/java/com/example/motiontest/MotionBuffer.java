@@ -3,19 +3,19 @@ package com.example.motiontest;
 import java.util.ArrayList;
 
 public class MotionBuffer {
-    private EvictingQueue<double[]> memory;
-    private ArrayList<double[]> recording;
+    private EvictingQueue<float[]> memory;
+    private ArrayList<float[]> recording;
 
     public MotionBuffer(int memorySize) {
         memory = new EvictingQueue<>(memorySize);
         recording = new ArrayList<>();
     }
 
-    public void addToMemory(double[] sample) {
+    public void addToMemory(float[] sample) {
         memory.add(sample);
     }
 
-    public void recordSample(double[] sample) {
+    public void recordSample(float[] sample) {
         recording.add(sample);
     }
 
@@ -25,9 +25,9 @@ public class MotionBuffer {
     }
 
     public Motion getMotion() {
-        ArrayList<double[]> combined = new ArrayList<>(memory);
+        ArrayList<float[]> combined = new ArrayList<>(memory);
         combined.addAll(recording);
-        return new Motion(combined);
+        return new Motion(combined.toArray(new float[combined.size()][3]), combined.size());
     }
 
     public boolean isEmpty() {

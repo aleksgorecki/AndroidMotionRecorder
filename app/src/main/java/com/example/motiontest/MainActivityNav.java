@@ -161,11 +161,11 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         ArrayList<Entry> yEntries = new ArrayList<>();
         ArrayList<Entry> zEntries = new ArrayList<>();
 
-        ArrayList<Double>[] separatedAxes = lastRecordedMotion.getSeparatedAxes();
+        ArrayList<Float>[] separatedAxes = lastRecordedMotion.getSeparatedAxes();
         for (int i = 0; i < lastRecordedMotion.getNumSamples(); i++) {
-            xEntries.add(new Entry(i, separatedAxes[0].get(i).floatValue()));
-            yEntries.add(new Entry(i, separatedAxes[1].get(i).floatValue()));
-            zEntries.add(new Entry(i, separatedAxes[2].get(i).floatValue()));
+            xEntries.add(new Entry(i, separatedAxes[0].get(i)));
+            yEntries.add(new Entry(i, separatedAxes[1].get(i)));
+            zEntries.add(new Entry(i, separatedAxes[2].get(i)));
         }
         LineDataSet xDataSet = new LineDataSet(xEntries, "X");
         LineDataSet yDataSet = new LineDataSet(yEntries, "Y");
@@ -265,7 +265,7 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
 
         if (isRecording) {
             recordedSamplesNumber++;
-            motionBuffer.recordSample(new double[]{x, y, z});
+            motionBuffer.recordSample(new float[]{x, y, z});
         }
     }
 

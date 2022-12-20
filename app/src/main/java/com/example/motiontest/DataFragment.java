@@ -106,7 +106,7 @@ public class DataFragment extends Fragment {
 
         try {
 
-            ArrayList<Double>[] axesData = parentActivity.getLastRecordedMotion().getSeparatedAxes();
+            ArrayList<Float>[] axesData = parentActivity.getLastRecordedMotion().getSeparatedAxes();
 
             JSONArray xJsonArray = new JSONArray(axesData[0]);
             JSONArray yJsonArray = new JSONArray(axesData[1]);
