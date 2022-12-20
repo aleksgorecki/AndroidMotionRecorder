@@ -90,6 +90,10 @@ public class MainActivityNav extends AppCompatActivity implements SensorEventLis
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            getSupportActionBar().hide();
+        }
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         assignPreferencesValues();
         okHttpClient = new OkHttpClient.Builder().connectTimeout(timeoutMs, TimeUnit.MILLISECONDS).build();
