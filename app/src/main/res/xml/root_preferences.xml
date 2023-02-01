@@ -1,0 +1,87 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <PreferenceCategory app:title="General" app:iconSpaceReserved="false">
+        <Preference
+            app:iconSpaceReserved="false"
+            app:title="Reset to defaults"
+            app:key="reset">
+        </Preference>
+        <SwitchPreference
+            app:key="crop"
+            app:iconSpaceReserved="false"
+            app:title="Crop to extremum"
+            app:defaultValue="false"
+            >
+        </SwitchPreference>
+        <EditTextPreference
+            app:dependency="crop"
+            app:iconSpaceReserved="false"
+            app:key="crop_len"
+            app:title="Cropped motion length (samples)"
+            app:defaultValue="100">
+        </EditTextPreference>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Server connection" app:iconSpaceReserved="false">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:title="Check server connection"
+            app:key="check_server">
+        </Preference>
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="server_address"
+            app:title="Server address"
+            app:defaultValue="192.168.0.20:8080">
+        </EditTextPreference>
+
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="timeout"
+            app:title="Timeout (ms)"
+            app:defaultValue="5000">
+        </EditTextPreference>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Recording" app:iconSpaceReserved="false">
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="recording_duration"
+            app:title="Recording duration (ms)"
+            app:defaultValue="800">
+        </EditTextPreference>
+        <SwitchPreference
+            app:key="countdown"
+            app:iconSpaceReserved="false"
+            app:title="Countdown before recording"
+            app:defaultValue="false"
+            >
+        </SwitchPreference>
+        <EditTextPreference
+            app:dependency="countdown"
+            app:iconSpaceReserved="false"
+            app:key="countdown_sec"
+            app:title="Countdown duration (sec)"
+            app:defaultValue="3">
+        </EditTextPreference>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Chart" app:iconSpaceReserved="false">
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="min_y"
+            app:title="Min amplitude"
+            app:defaultValue="-25">
+        </EditTextPreference>
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="max_y"
+            app:title="Max amplitude"
+            app:defaultValue="25">
+        </EditTextPreference>
+    </PreferenceCategory>
+
+</PreferenceScreen>
