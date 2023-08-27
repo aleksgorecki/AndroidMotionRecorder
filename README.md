@@ -8,14 +8,14 @@ Code for the server receiving the data can be found at [aleksgorecki/motion-serv
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
-  - [Main functionalities](#main-functionalities)
-    - [Recording 'gestures'](#recording-gestures)
-    - [Creating datasets](#creating-datasets)
-    - [Making predictions](#making-predictions)
-    - [Customizing application's settings](#customizing-applications-settings)
-  - [Additional screenshots](#additional-screenshots)
-  - [Earlier versions](#earlier-versions)
-  - [Dependencies](#dependencies)
+- [Main functionalities](#main-functionalities)
+  - [Recording 'gestures'](#recording-gestures)
+  - [Creating datasets](#creating-datasets)
+  - [Making predictions](#making-predictions)
+  - [Customizing application's settings](#customizing-applications-settings)
+- [Additional screenshots](#additional-screenshots)
+- [Earlier versions](#earlier-versions)
+- [Dependencies](#dependencies)
 
 ## Main functionalities
 
