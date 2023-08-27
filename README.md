@@ -6,7 +6,7 @@ The application was written in Java, on API level 28 (Android 9).
 
 Code for the server receiving the data can be found at [aleksgorecki/motion-server](https://github.com/aleksgorecki/motion-server).
 
-# Table of Contents
+## Table of Contents
 - [Table of Contents](#table-of-contents)
   - [Main functionalities](#main-functionalities)
     - [Recording 'gestures'](#recording-gestures)
