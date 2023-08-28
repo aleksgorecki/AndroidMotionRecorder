@@ -23,7 +23,7 @@ Code for the server receiving the data can be found at [aleksgorecki/motion-serv
 
 A floating action button (FAB) can be pressed to start recording the next 800 milliseconds of accelerometer's readings. Alternatively, the volume-down side button may also be pressed to trigger this state. After it finishes, the recorded gesture is held in memory and displayed on a 2D chart in the upper half of the screen. The gesture can be then sent to the server or classified locally.
 
-<img src="readmeimg/gifrecorder.gif" width=200 />
+<img src="readmeimg/gifrecorder1.gif" width=200 />
 
 ### Creating datasets
 
